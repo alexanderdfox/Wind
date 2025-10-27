@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tesseract Wind Simulation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3a 50%, #0f0f23 100%);
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #title {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        #title h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #00d9ff, #ff0066);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(0, 217, 255, 0.5);
+            margin-bottom: 10px;
+            animation: glow 3s ease-in-out infinite alternate;
+        }
+
+        #title p {
+            font-size: 1.2rem;
+            color: #888;
+            opacity: 0.8;
+        }
+
+        @keyframes glow {
+            from {
+                filter: brightness(1);
+            }
+            to {
+                filter: brightness(1.5);
+            }
+        }
+
+        canvas {
+            display: block;
+            cursor: move;
+            margin: auto;
+            box-shadow: 0 0 50px rgba(0, 217, 255, 0.3);
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 20px 30px;
+            border-radius: 15px;
+            border: 1px solid rgba(0, 217, 255, 0.3);
+            display: flex;
+            gap: 30px;
+            z-index: 10;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .control-group label {
+            font-size: 0.9rem;
+            color: #00d9ff;
+            font-weight: 600;
+        }
+
+        .control-group input[type="range"] {
+            width: 200px;
+            height: 5px;
+            background: rgba(0, 217, 255, 0.2);
+            border-radius: 5px;
+            outline: none;
+            appearance: none;
+        }
+
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            background: #00d9ff;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 217, 255, 0.8);
+        }
+
+        .control-group input[type="range"]::-moz-range-thumb {
+            width: 15px;
+            height: 15px;
+            background: #00d9ff;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 10px rgba(0, 217, 255, 0.8);
+        }
+
+        #info {
+            position: absolute;
+            top: 100px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 217, 255, 0.3);
+            font-size: 0.85rem;
+            line-height: 1.6;
+            max-width: 250px;
+        }
+
+        #info h3 {
+            color: #00d9ff;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        #info p {
+            color: #aaa;
+            font-size: 0.8rem;
+        }
+
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            color: #00d9ff;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="title">
+            <h1>TESSERACT TORUS</h1>
+            <p>Earth with 32 Tesseracts in Wind</p>
+        </div>
+
+        <div id="info">
+            <h3>Scene</h3>
+            <p>🌍 Earth at center<br>
+            🌀 32 tesseracts<br>
+            🎨 Color-shifted<br>
+            🌬️ Wind animation</p>
+        </div>
+
+        <canvas id="canvas"></canvas>
+
+        <div id="controls">
+            <div class="control-group">
+                <label for="windX">Wind X</label>
+                <input type="range" id="windX" min="-2" max="2" step="0.1" value="0">
+            </div>
+            <div class="control-group">
+                <label for="windY">Wind Y</label>
+                <input type="range" id="windY" min="-2" max="2" step="0.1" value="0">
+            </div>
+            <div class="control-group">
+                <label for="windZ">Wind Z</label>
+                <input type="range" id="windZ" min="-2" max="2" step="0.1" value="0">
+            </div>
+            <div class="control-group">
+                <label for="windW">Wind W (4D)</label>
+                <input type="range" id="windW" min="-2" max="2" step="0.1" value="0.5">
+            </div>
+            <div class="control-group">
+                <label for="intensity">Intensity</label>
+                <input type="range" id="intensity" min="0" max="1" step="0.01" value="0.5">
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
